@@ -125,6 +125,9 @@ targets:
       - path: ../web-extension/enhance.css
         type: file
         buildPhase: resources
+      - path: ../web-extension/layout-engine.js
+        type: file
+        buildPhase: resources
     dependencies:
       - sdk: SafariServices.framework
     info:
