@@ -11,8 +11,9 @@
 #      (-allowProvisioningUpdates also provisions the widget's App Group under Developer ID).
 #   4. Notarize (notarytool --wait) and staple the .app.
 #   5. Zip the stapled .app.
-#   6. Update the appcast on the gh-pages branch (hosts appcast.xml + all zips) and push.
-#   7. Tag main, push, and create a GitHub Release with the zip attached.
+#   6. Tag main, push, and create a GitHub Release with the zip attached (the download target).
+#   7. Regenerate the appcast (no deltas) on gh-pages with enclosure URLs pointing at the
+#      GitHub Release assets so Sparkle downloads are counted, then push gh-pages.
 #
 set -euo pipefail
 
@@ -94,7 +95,20 @@ xcrun stapler validate "$APP"
 # --- Zip the stapled app for distribution ----------------------------------
 ditto -c -k --keepParent "$APP" "$ZIP_PATH"
 
-# --- Update the appcast on gh-pages (hosts appcast.xml + every zip) ---------
+# --- Tag main + GitHub Release (hosts the zip; this is the download target) -
+# Must precede the appcast push so the release asset exists when clients fetch
+# the new appcast and resolve its enclosure URLs.
+git -C "$ROOT" add App/project.yml App/Info.plist
+git -C "$ROOT" commit -m "Release $VERSION"
+git -C "$ROOT" tag "v$VERSION"
+git -C "$ROOT" push origin main "v$VERSION"
+gh release create "v$VERSION" "$ZIP_PATH" --repo "$REPO" --title "v$VERSION" --generate-notes
+
+# --- Regenerate the appcast on gh-pages, pointing enclosures at the Releases -
+# gh-pages still hosts appcast.xml (SUFeedURL) and keeps the zips as the corpus
+# generate_appcast needs to rebuild the full feed. Deltas are disabled, and every
+# enclosure URL is rewritten from the Pages host to the per-version Release asset
+# so Sparkle update downloads register on each release's download_count.
 GEN="$(find_gen)"
 [ -n "$GEN" ] || { echo "error: generate_appcast not found (open the project in Xcode once to resolve Sparkle)" >&2; exit 1; }
 
@@ -103,17 +117,15 @@ git -C "$ROOT" worktree remove --force "$PAGES_WT" 2>/dev/null || true
 git -C "$ROOT" fetch origin gh-pages >/dev/null 2>&1 || true
 git -C "$ROOT" worktree add "$PAGES_WT" gh-pages
 cp "$ZIP_PATH" "$PAGES_WT/"
-"$GEN" "$PAGES_WT" --download-url-prefix "$PAGES_URL/"
+rm -f "$PAGES_WT"/*.delta
+"$GEN" "$PAGES_WT" --maximum-deltas 0 --download-url-prefix "$PAGES_URL/"
+# Rewrite enclosure URLs: Pages host -> per-version GitHub Release asset.
+sed -i '' -E \
+  "s#$PAGES_URL/VisioNext-([0-9]+\.[0-9]+\.[0-9]+)\.zip#https://github.com/$REPO/releases/download/v\1/VisioNext-\1.zip#g" \
+  "$PAGES_WT/appcast.xml"
 git -C "$PAGES_WT" add -A
 git -C "$PAGES_WT" commit -m "Release $VERSION"
 git -C "$PAGES_WT" push origin gh-pages
 git -C "$ROOT" worktree remove --force "$PAGES_WT"
 
-# --- Tag main + GitHub Release (human-facing, attaches the zip) -------------
-git -C "$ROOT" add App/project.yml App/Info.plist
-git -C "$ROOT" commit -m "Release $VERSION"
-git -C "$ROOT" tag "v$VERSION"
-git -C "$ROOT" push origin main "v$VERSION"
-gh release create "v$VERSION" "$ZIP_PATH" --repo "$REPO" --title "v$VERSION" --generate-notes
-
-echo "Released $VERSION → $PAGES_URL/appcast.xml"
+echo "Released $VERSION → $PAGES_URL/appcast.xml (enclosures → GitHub Releases)"
