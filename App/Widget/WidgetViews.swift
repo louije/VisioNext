@@ -144,7 +144,7 @@ struct NewLinkBar: View {
             Label(copied ? "Lien copié" : "Nouveau lien visio",
                   systemImage: copied ? "checkmark" : "plus")
                 .font(.footnote.weight(.bold))
-                .foregroundStyle(fullColor ? Color.white : Color.primary)
+                .foregroundStyle(Color.white)   // full brightness in vibrant/mono modes too
                 .padding(.horizontal, 16)   // align label with the rows' text
                 .frame(maxWidth: .infinity, minHeight: 34, alignment: .leading)
                 .contentShape(Rectangle())
