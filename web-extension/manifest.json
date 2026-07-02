@@ -11,7 +11,8 @@
         "http://127.0.0.1/*"
       ],
       "css": ["enhance.css"],
-      "run_at": "document_start",
+      "js": ["layout-engine.js"],
+      "run_at": "document_idle",
       "all_frames": false
     }
   ]

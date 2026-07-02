@@ -1,23 +1,32 @@
-# Meet multi-column people strip
+# Adaptive Meet participant strip
 
-A tiny CSS tweak for [Meet / La Suite numérique](https://visio.numerique.gouv.fr)
-(built on LiveKit). When a screen is shared, Meet's focus layout squeezes everyone
-else into a **single vertical scrolling column**. This makes that strip **auto-wrap
-into multiple columns**, so you see more faces at once. No UI, no JavaScript logic —
-just a stylesheet.
+An adaptive layout tweak for [Meet / La Suite numérique](https://visio.numerique.gouv.fr)
+(built on LiveKit). When a screen is shared, Meet's focus mode squeezes everyone
+else into a **single vertical scrolling column**. A small engine instead reads the
+shared content's real aspect ratio and lays the participants out:
 
-`enhance.css` is the single source of truth, delivered three ways.
+- **Side or below** — the strip goes where the grey letterbox bars are (below when
+  the content is wider than the focus area, on the side when it's taller).
+- **One line, or two** — prefers a single line of thumbnails, allows a second,
+  never more; scrolls past that while keeping thumbnails legible.
+
+Two sources, shared by all three targets:
+
+- `enhance.css` — turns the engine's hooks into the grid (and, with JS off, still
+  gives a widened auto-wrapping side column).
+- `layout-engine.js` — measures + decides, writing `data-vn-place` / `--vn-lines` /
+  `--vn-strip` onto `.lk-focus-layout`. Its decision function is pure and
+  unit-tested (`layout-engine.test.cjs`, run `node --test`).
 
 ## Design notes
 
-See [`../docs/superpowers/specs/2026-07-02-meet-multicolumn-strip-design.md`](../docs/superpowers/specs/2026-07-02-meet-multicolumn-strip-design.md).
-Tunables live at the top of `enhance.css`: `--vn-carousel-max` (how wide the strip
-may grow, default `34vw`) and `--vn-min-tile` (min tile width before wrapping,
-default `132px`).
+See [`../docs/superpowers/specs/2026-07-02-meet-adaptive-layout-engine-design.md`](../docs/superpowers/specs/2026-07-02-meet-adaptive-layout-engine-design.md).
+Tunables (min tile size, max lines, max strip fraction) are constants in
+`layout-engine.js`, overridable at runtime via `window.__vnMeet.config`.
 
-> The selectors were validated against LiveKit's stock CSS and Meet's source, not
-> the live DOM. If on the live site the strip converts to a grid but does **not**
-> widen, uncomment the generic fallback block (section 1b) in `enhance.css`.
+> Validated against LiveKit's stock CSS + Meet's live DOM and unit tests, but the
+> grid CSS itself hasn't been eyeballed on the running site — expect one round of
+> live tuning of the section 2/3 rules in `enhance.css`.
 
 ## 1. Bookmarklet (any browser, zero install)
 
@@ -37,14 +46,14 @@ This folder **is** the extension.
 1. `chrome://extensions` → enable **Developer mode**.
 2. **Load unpacked** → select this `web-extension/` directory.
 
-It injects `enhance.css` on `visio.numerique.gouv.fr` (and `localhost` for local
-Meet dev).
+It injects `enhance.css` + `layout-engine.js` on `visio.numerique.gouv.fr` (and
+`localhost` for local Meet dev).
 
 ## 3. Safari (bundled with VisioNext.app)
 
 The Safari Web Extension ships inside the VisioNext menu-bar app as the
 `VisioSafariExtension` target (see `../App/project.yml`). It reuses the same
-`manifest.json` + `enhance.css` from this folder.
+`manifest.json` + `enhance.css` + `layout-engine.js` from this folder.
 
 ```sh
 cd ../App && xcodegen generate && open VisioNext.xcodeproj
@@ -58,6 +67,8 @@ Unsigned Extensions** during development.)
 
 | File | Role |
 |------|------|
-| `enhance.css` | The override — single source of truth |
+| `layout-engine.js` | Measures + decides; writes the layout hooks |
+| `enhance.css` | Turns the hooks into the grid (JS-off fallback included) |
+| `layout-engine.test.cjs` | Unit tests for the pure decision (`node --test`) |
 | `manifest.json` | MV3 manifest (Chrome + Safari) |
-| `build-bookmarklet.mjs` | Generates `dist/bookmarklet.txt` + `dist/install.html` |
+| `build-bookmarklet.mjs` | Bundles CSS+JS into `dist/bookmarklet.txt` + `dist/install.html` |
