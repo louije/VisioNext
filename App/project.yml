@@ -10,6 +10,8 @@ fileGroups:
   - project.yml
   - VisioNext.entitlements
   - Widget/VisioWidget.entitlements
+  # Shared web-extension source (also the unpacked Chrome extension / bookmarklet source)
+  - ../web-extension
 packages:
   VisioCore:
     path: ../VisioCore
@@ -34,6 +36,7 @@ targets:
       - package: Sparkle
         product: Sparkle
       - target: VisioWidget
+      - target: VisioSafariExtension
     info:
       path: Info.plist
       properties:
@@ -95,6 +98,47 @@ targets:
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.meidosem.visionext.widget
+        GENERATE_INFOPLIST_FILE: NO
+        MARKETING_VERSION: "0.2.3"
+        CURRENT_PROJECT_VERSION: "5"
+        SWIFT_VERSION: "6.0"
+        DEVELOPMENT_TEAM: "684SSZLSSG"
+        CODE_SIGN_STYLE: Automatic
+        ENABLE_HARDENED_RUNTIME: YES
+        SKIP_INSTALL: YES
+  # Safari Web Extension that injects the multi-column Meet strip stylesheet.
+  # Its web assets (manifest.json, enhance.css) are the shared ../web-extension
+  # source — the same files used, unpacked, as the Chrome extension.
+  VisioSafariExtension:
+    type: app-extension
+    platform: macOS
+    sources:
+      - path: SafariExtension
+      - path: ../web-extension/manifest.json
+        type: file
+        buildPhase: resources
+      - path: ../web-extension/enhance.css
+        type: file
+        buildPhase: resources
+    dependencies:
+      - sdk: SafariServices.framework
+    info:
+      path: SafariExtension/Info.plist
+      properties:
+        CFBundleDisplayName: "Meet multi-column strip"
+        CFBundleShortVersionString: "$(MARKETING_VERSION)"
+        CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.Safari.web-extension
+          NSExtensionPrincipalClass: "$(PRODUCT_MODULE_NAME).SafariWebExtensionHandler"
+    entitlements:
+      path: SafariExtension/VisioSafariExtension.entitlements
+      properties:
+        com.apple.security.app-sandbox: true
+        com.apple.security.network.client: true
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.meidosem.visionext.safari
         GENERATE_INFOPLIST_FILE: NO
         MARKETING_VERSION: "0.2.3"
         CURRENT_PROJECT_VERSION: "5"
