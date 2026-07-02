@@ -10,3 +10,6 @@ App/VisioNext.xcodeproj/
 
 # Local planning/specs (superpowers workflow)
 docs/superpowers/
+
+# Generated from web-extension/enhance.css by build-bookmarklet.mjs
+web-extension/dist/

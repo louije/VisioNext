@@ -1,0 +1,65 @@
+/*
+ * VisioNext — multi-column people strip for Meet / LiveKit
+ * ------------------------------------------------------------------
+ * When a screen (or a participant) is featured, LiveKit's focus layout
+ * puts everyone else in a single vertical scrolling column. This stylesheet
+ * turns that column into an auto-wrapping multi-column grid, so you can see
+ * more faces at once. No UI, no JS.
+ *
+ * It overrides rules from @livekit/components-styles. The hooks used
+ * (`.lk-carousel` + `[data-lk-orientation="vertical"]`) are set imperatively
+ * by Meet's CarouselLayout, so they're stable even though the rest of Meet's
+ * classes are hashed by Panda CSS.
+ *
+ * Tunables:
+ *   --vn-carousel-max : how wide the strip may grow      (default 34vw)
+ *   --vn-min-tile     : min tile width before wrapping   (default 132px)
+ *
+ * NOTE: validated against LiveKit stock CSS + Meet source, not the live DOM.
+ * If the strip becomes a grid but does NOT widen, the focus wrapper isn't
+ * `.lk-focus-layout` — enable the generic fallback in section 1b.
+ */
+
+:root {
+  --vn-carousel-max: 34vw;
+  --vn-min-tile: 132px;
+}
+
+/* 1a. Give the strip room. Stock `.lk-focus-layout` is a
+ *     `grid-template-columns: 1fr 5fr` (strip | focus) grid — widen col 1. */
+.lk-focus-layout:has(> aside.lk-carousel[data-lk-orientation="vertical"]) {
+  grid-template-columns:
+    minmax(0, var(--vn-carousel-max)) minmax(0, 1fr) !important;
+}
+
+/* 1b. Generic fallback — uncomment if the strip does not widen on the live
+ *     site (its wrapper is a custom Meet element, not `.lk-focus-layout`).
+ *     `>` restricts the match to the strip's direct parent only.
+*:has(> aside.lk-carousel[data-lk-orientation="vertical"]) {
+  display: grid !important;
+  grid-template-columns:
+    minmax(0, var(--vn-carousel-max)) minmax(0, 1fr) !important;
+  align-items: stretch !important;
+}
+*/
+
+/* 2. One column -> auto-wrapping grid. */
+aside.lk-carousel[data-lk-orientation="vertical"] {
+  display: grid !important;
+  grid-template-columns:
+    repeat(auto-fill, minmax(var(--vn-min-tile), 1fr)) !important;
+  grid-auto-rows: max-content !important;
+  align-content: start !important;
+  gap: var(--lk-grid-gap, 0.5rem) !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+}
+
+/* 3. Drop the stock per-tile height (it divides the column height by
+ *    --lk-max-visible-tiles); let tiles keep their 16:10 aspect ratio and
+ *    fill each grid cell instead. */
+aside.lk-carousel[data-lk-orientation="vertical"] > * {
+  height: auto !important;
+  width: auto !important;
+  max-height: none !important;
+}

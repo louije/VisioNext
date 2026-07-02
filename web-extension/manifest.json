@@ -1,0 +1,18 @@
+{
+  "manifest_version": 3,
+  "name": "VisioNext — Meet multi-column strip",
+  "version": "0.1.0",
+  "description": "Wraps the participant strip into multiple columns when a screen is shared on Meet / visio.numerique.gouv.fr (LiveKit).",
+  "content_scripts": [
+    {
+      "matches": [
+        "https://visio.numerique.gouv.fr/*",
+        "http://localhost/*",
+        "http://127.0.0.1/*"
+      ],
+      "css": ["enhance.css"],
+      "run_at": "document_start",
+      "all_frames": false
+    }
+  ]
+}
