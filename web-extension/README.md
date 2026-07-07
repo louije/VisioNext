@@ -47,9 +47,29 @@ This folder **is** the extension.
 2. **Load unpacked** → select this `web-extension/` directory.
 
 It injects `enhance.css` + `layout-engine.js` on `visio.numerique.gouv.fr` (and
-`localhost` for local Meet dev).
+`localhost` for local Meet dev). (Chrome logs a harmless "Unrecognized manifest
+key browser_specific_settings" — that key is only for Firefox.)
 
-## 3. Safari (bundled with VisioNext.app)
+## 3. Firefox
+
+Same folder, same MV3 manifest (the Firefox add-on id lives in
+`browser_specific_settings.gecko`).
+
+- **Temporary (dev):** `about:debugging#/runtime/this-firefox` → **Load Temporary
+  Add-on…** → pick this folder's `manifest.json`. Gone on restart.
+- **Permanent:** submit `dist/web-extension.zip` to
+  [addons.mozilla.org](https://addons.mozilla.org) for signing, or load the zip in
+  Firefox Developer/Nightly with `xpinstall.signatures.required=false`.
+
+## Packaging (Chrome Web Store / AMO)
+
+```sh
+node package.mjs   # -> dist/web-extension.zip (manifest + css + js)
+```
+
+One zip works for both stores; the Firefox id is baked into the manifest.
+
+## 4. Safari (bundled with VisioNext.app)
 
 The Safari Web Extension ships inside the VisioNext menu-bar app as the
 `VisioSafariExtension` target (see `../App/project.yml`). It reuses the same

@@ -2,7 +2,13 @@
   "manifest_version": 3,
   "name": "VisioNext — Meet multi-column strip",
   "version": "0.1.0",
-  "description": "Wraps the participant strip into multiple columns when a screen is shared on Meet / visio.numerique.gouv.fr (LiveKit).",
+  "description": "Adapts the participant strip to the shared content when a screen is shared on Meet / visio.numerique.gouv.fr (LiveKit).",
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "visio-meet-layout@meidosem.com",
+      "strict_min_version": "109.0"
+    }
+  },
   "content_scripts": [
     {
       "matches": [
