@@ -32,7 +32,9 @@ ARCHIVE="$BUILD_DIR/VisioNext.xcarchive"
 EXPORT_DIR="$BUILD_DIR/export"
 ZIP_NAME="VisioNext-$VERSION.zip"
 ZIP_PATH="$BUILD_DIR/$ZIP_NAME"
-DMG_PATH="$BUILD_DIR/VisioNext-$VERSION.dmg"
+# Versionless on purpose: a stable asset name makes
+# github.com/…/releases/latest/download/VisioNext.dmg always resolve to the newest.
+DMG_PATH="$BUILD_DIR/VisioNext.dmg"
 PAGES_WT="$ROOT/build/gh-pages"
 
 # --- Preflight -------------------------------------------------------------
@@ -109,9 +111,8 @@ ditto -c -k --keepParent "$APP" "$ZIP_PATH"
 # is already stapled, so both layers carry the ticket.
 echo "Building DMG…"
 rm -f "$DMG_PATH"
-create-dmg "$APP" "$BUILD_DIR" --overwrite --identity="$SIGN_ID"
-DMG_SRC="$(ls -t "$BUILD_DIR"/VisioNext*.dmg | head -1)"
-[ "$DMG_SRC" = "$DMG_PATH" ] || mv -f "$DMG_SRC" "$DMG_PATH"
+create-dmg "$APP" "$BUILD_DIR" --overwrite --no-version-in-filename --identity="$SIGN_ID"
+[ -f "$DMG_PATH" ] || { echo "error: DMG not created at $DMG_PATH" >&2; exit 1; }
 codesign --verify --strict "$DMG_PATH" || { echo "error: DMG not code-signed" >&2; exit 1; }
 echo "Notarizing DMG…"
 xcrun notarytool submit "$DMG_PATH" --keychain-profile "$NOTARY_PROFILE" --wait

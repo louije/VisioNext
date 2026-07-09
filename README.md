@@ -1,97 +1,110 @@
 <div align="center">
-  <img src="docs/icon.png" width="128" alt="VisioNext app icon">
+  <img src="docs/icon.png" width="128" alt="Icône VisioNext">
   <h1>VisioNext</h1>
+  <p>Une liste des visios à venir dans la barre de menus macOS.</p>
+  <p>
+    <a href="https://github.com/louije/visio-next/releases/latest/download/VisioNext.dmg">
+      <b>⬇️&nbsp;&nbsp;Télécharger VisioNext</b>
+    </a>
+    <br>
+    <sub>macOS 14 ou plus récent · libre</sub>
+  </p>
 </div>
 
-A macOS menu bar app that lists your upcoming calendar meetings (via EventKit) and
-one-click-joins their video links — including the French government
-**[visio.numerique.gouv.fr](https://visio.numerique.gouv.fr)** service (La Suite
-numérique), plus Zoom, Google Meet, Teams, Jitsi, Webex, and BigBlueButton.
-Calendar data comes from the accounts already configured in macOS Calendar.app —
-no credentials are stored by this app.
+---
+
+VisioNext liste les prochaines réunions (depuis le Calendrier macOS) et permet de les rejoindre
+d'un clic. Plein d'autres applications font ça (sûrement). Celle-ci a la particularité de gérer les
+liens de l'application Viso de LaSuite (visio.numerique.gouv.fr).
 
 > [!IMPORTANT]
-> LLM Disclosure: This project was developed with the assistance of large language models (AI coding tools).
+> Contamination IA : ce projet a été développé avec l'aide de modèles de langage
+> (outils de programmation assistés par IA).
 
-## Download
+## Fonctionnalités
 
-[**Download the latest release**](https://github.com/louije/visio-next/releases/latest)
-— open the `.dmg` and drag `VisioNext.app` to Applications. It's Developer ID-signed,
-notarized, and stapled (both the app and the disk image), so it opens without
-Gatekeeper warnings. After the first install, updates are automatic via Sparkle.
+- Icône dans la barre des menus
+- Génération de liens Visio personnalisables
+- Widget macOS
+- Extension Safari qui améliore la mise en page de Visio lors de partages d'écran
 
-> On macOS Sequoia, if you ever see "Apple could not verify…", it means the copy
-> lost its notarization ticket in transit (e.g. a third-party unzip tool). The DMG
-> avoids that; if needed, open **System Settings → Privacy & Security → Open Anyway**.
+## Installation
 
-## Layout
+1. **[Télécharger VisioNext](https://github.com/louije/visio-next/releases/latest/download/VisioNext.dmg)**.
+2. Ouvrir le fichier `.dmg`, puis glisser **VisioNext** dans le dossier **Applications**.
+3. Lancer VisioNext et autoriser l'accès au calendrier au premier démarrage.
 
-- `VisioCore/` — SwiftPM package with all the (tested) domain logic.
-- `App/` — the SwiftUI menu bar app. The Xcode project is generated from
-  `App/project.yml` with [XcodeGen](https://github.com/yonsm/XcodeGen) and is **not**
-  committed.
+L'application tourne localement, et ne récupère aucune statistique d'utilisation. Des appels réseaux
+sont émis pour vérifier si une mise à jour est disponible.
 
-## Build
+---
+
+## Pour les développeurs
+
+### Architecture
+
+- `VisioCore/` — paquet SwiftPM contenant toute la logique métier (testée).
+- `App/` — l'app SwiftUI de barre de menus. Le projet Xcode est généré depuis
+  `App/project.yml` avec [XcodeGen](https://github.com/yonsm/XcodeGen) et n'est **pas**
+  versionné.
+
+### Compiler
 
 ```sh
-# one-time
+# une seule fois
 brew install xcodegen
 
-# generate the Xcode project
+# générer le projet Xcode
 cd App && xcodegen generate
 
-# build from the command line (no signing)
+# compiler en ligne de commande (sans signature)
 xcodebuild -project VisioNext.xcodeproj -scheme VisioNext \
   -destination 'platform=macOS' CODE_SIGNING_ALLOWED=NO build
 
-# run the package tests
+# lancer les tests du paquet
 cd ../VisioCore && swift test
 ```
 
-To run the app: `open App/VisioNext.xcodeproj`, set your signing Team under
-Signing & Capabilities, then Run. Grant calendar access on first launch.
+Pour lancer l'app : `open App/VisioNext.xcodeproj`, choisissez votre équipe de
+signature dans Signing & Capabilities, puis Run. Autorisez l'accès au calendrier au
+premier démarrage.
 
-## Install locally
+### Installer en local
 
 ```sh
-Scripts/install.sh   # build, sign (Apple Development), install to ~/Applications, launch
+Scripts/install.sh   # compile, signe (Apple Development), installe dans ~/Applications, lance
 ```
 
-Apple Development (automatic) signing is used here so the widget's App Group is
-provisioned and TCC (calendar access) sticks across rebuilds.
+La signature Apple Development (automatique) est utilisée ici pour que l'App Group
+du widget soit provisionné et que l'accès au calendrier (TCC) persiste entre les
+compilations.
 
-## Releasing (auto-update via Sparkle)
+### Publier une version (mise à jour auto via Sparkle)
 
-Releases are Developer ID-signed, notarized, EdDSA-signed for Sparkle, published
-as a GitHub Release, and advertised via an appcast on GitHub Pages.
+Les versions sont signées Developer ID, notarisées, signées EdDSA pour Sparkle,
+publiées en Release GitHub, et annoncées via un appcast sur GitHub Pages.
 
 ```sh
 Scripts/release.sh X.Y.Z
 ```
 
-The script bumps the version in `project.yml`, archives + exports with automatic
-Developer ID provisioning (which also provisions the widget's App Group under
-Developer ID), notarizes and staples, then publishes the appcast and zip to the
-`gh-pages` branch and creates a GitHub Release. It preflights every prerequisite
-below and fails early with a clear message if one is missing.
+Le script incrémente la version dans `project.yml`, archive et exporte avec
+provisioning Developer ID automatique, notarise et estampille **l'app et le DMG**,
+puis crée une Release GitHub avec le **DMG** (le téléchargement grand public,
+toujours accessible via `releases/latest/download/VisioNext.dmg`) et le **zip** (pour
+les mises à jour Sparkle), et publie l'appcast sur `gh-pages`. Il vérifie chaque
+prérequis ci-dessous et s'arrête tôt avec un message clair si l'un manque.
 
-### One-time prerequisites
+#### Prérequis (une seule fois)
 
-- **Developer ID Application** certificate in the login keychain (team `684SSZLSSG`).
-- **notarytool keychain profile** named `visio-notary`:
+- Certificat **Developer ID Application** dans le trousseau (équipe `684SSZLSSG`).
+- Profil **notarytool** nommé `visio-notary` :
   `xcrun notarytool store-credentials visio-notary`
-  (Apple ID + app-specific password, or an App Store Connect API key).
-- **Sparkle EdDSA key** in the keychain (public key already in `Info.plist` via
-  `project.yml`'s `SUPublicEDKey`, generated once with Sparkle's `generate_keys`).
-  The private key never leaves your keychain and is never committed.
-- **`gh` CLI** authenticated (`gh auth status`).
-- **GitHub Pages** enabled on the `gh-pages` branch (root). It hosts `appcast.xml`
-  and every release zip; `SUFeedURL` is `https://louije.github.io/visio-next/appcast.xml`.
-
-<!--
-## Status
-
-Stages 1–5 implemented: link generator, settings/quit, imminent color, WidgetKit
-widget, and Sparkle auto-update.
--->
-
+  (identifiant Apple + mot de passe d'application, ou clé App Store Connect).
+- **[create-dmg](https://github.com/sindresorhus/create-dmg)** : `npm install --global create-dmg`.
+- Clé **Sparkle EdDSA** dans le trousseau (la clé publique est déjà dans `Info.plist`
+  via `SUPublicEDKey`, générée une fois avec `generate_keys` de Sparkle). La clé
+  privée ne quitte jamais le trousseau et n'est jamais versionnée.
+- **`gh`** authentifié (`gh auth status`).
+- **GitHub Pages** actif sur la branche `gh-pages` (racine) — il héberge
+  `appcast.xml` ; `SUFeedURL` vaut `https://louije.github.io/visio-next/appcast.xml`.
