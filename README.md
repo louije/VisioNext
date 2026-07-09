@@ -108,3 +108,22 @@ prérequis ci-dessous et s'arrête tôt avec un message clair si l'un manque.
 - **`gh`** authentifié (`gh auth status`).
 - **GitHub Pages** actif sur la branche `gh-pages` (racine) — il héberge
   `appcast.xml` ; `SUFeedURL` vaut `https://louije.github.io/visio-next/appcast.xml`.
+
+## Licence
+
+Le code de ce projet est publié sous licence **MIT** (voir [`LICENSE`](LICENSE)).
+
+VisioNext est un projet indépendant, non affilié à DINUM, à La Suite numérique, ni
+aux éditeurs des services listés. La licence MIT couvre le code, **pas** les
+marques et logos ci-dessous :
+
+- Les logos des services (Zoom, Google Meet, Microsoft Teams, Jitsi, Webex,
+  BigBlueButton) sont des marques de leurs détenteurs respectifs, inclus
+  uniquement pour identifier ces services. Fichiers issus de
+  [Simple Icons](https://simpleicons.org) (CC0-1.0) le cas échéant — la licence
+  CC0 porte sur les fichiers, pas sur les marques.
+- Le logo « Visio » provient du service public
+  [visio.numerique.gouv.fr](https://visio.numerique.gouv.fr) (La Suite numérique,
+  État français) et reste la propriété de son détenteur ; il identifie le service.
+- L'app embarque [Sparkle](https://sparkle-project.org) pour les mises à jour,
+  distribué sous sa propre licence.
