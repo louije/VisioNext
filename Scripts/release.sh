@@ -5,13 +5,14 @@
 # Usage:  Scripts/release.sh X.Y.Z
 #
 # What it does:
-#   1. Preflight: xcodegen, gh auth, Developer ID cert, notarytool profile, generate_appcast.
+#   1. Preflight: xcodegen, gh auth, Developer ID cert, create-dmg, notarytool profile.
 #   2. Bump MARKETING_VERSION (=X.Y.Z) and CURRENT_PROJECT_VERSION (+1) in project.yml.
 #   3. xcodebuild archive + -exportArchive with automatic Developer ID provisioning
 #      (-allowProvisioningUpdates also provisions the widget's App Group under Developer ID).
 #   4. Notarize (notarytool --wait) and staple the .app.
-#   5. Zip the stapled .app.
-#   6. Tag main, push, and create a GitHub Release with the zip attached (the download target).
+#   5. Zip the stapled .app (for Sparkle updates) and build a signed + notarized DMG
+#      (the human download — robust against unzip tools that strip the ticket).
+#   6. Tag main, push, and create a GitHub Release with the DMG + zip attached.
 #   7. Regenerate the appcast (no deltas) on gh-pages with enclosure URLs pointing at the
 #      GitHub Release assets so Sparkle downloads are counted, then push gh-pages.
 #
@@ -31,6 +32,7 @@ ARCHIVE="$BUILD_DIR/VisioNext.xcarchive"
 EXPORT_DIR="$BUILD_DIR/export"
 ZIP_NAME="VisioNext-$VERSION.zip"
 ZIP_PATH="$BUILD_DIR/$ZIP_NAME"
+DMG_PATH="$BUILD_DIR/VisioNext-$VERSION.dmg"
 PAGES_WT="$ROOT/build/gh-pages"
 
 # --- Preflight -------------------------------------------------------------
@@ -39,8 +41,13 @@ command -v gh >/dev/null || { echo "error: brew install gh" >&2; exit 1; }
 gh auth status >/dev/null 2>&1 || { echo "error: gh not authenticated (gh auth login)" >&2; exit 1; }
 security find-identity -v -p codesigning | grep -q "Developer ID Application" \
   || { echo "error: no Developer ID Application certificate in keychain" >&2; exit 1; }
+command -v create-dmg >/dev/null || { echo "error: npm install --global create-dmg" >&2; exit 1; }
 xcrun notarytool history --keychain-profile "$NOTARY_PROFILE" >/dev/null 2>&1 \
   || { echo "error: notarytool profile '$NOTARY_PROFILE' missing. Run: xcrun notarytool store-credentials $NOTARY_PROFILE" >&2; exit 1; }
+
+# This keychain has several identically-named "Developer ID Application" certs, so
+# create-dmg's name-based lookup is ambiguous; resolve an explicit SHA-1 for it.
+SIGN_ID="$(security find-identity -v -p codesigning | grep "Developer ID Application" | head -1 | awk '{print $2}')"
 
 # --- Bump version in project.yml ------------------------------------------
 cd "$APP_DIR"
@@ -92,8 +99,24 @@ xcrun notarytool submit "$NOTARY_ZIP" --keychain-profile "$NOTARY_PROFILE" --wai
 xcrun stapler staple "$APP"
 xcrun stapler validate "$APP"
 
-# --- Zip the stapled app for distribution ----------------------------------
+# --- Zip the stapled app (Sparkle updates keep using this) ------------------
 ditto -c -k --keepParent "$APP" "$ZIP_PATH"
+
+# --- Styled DMG for the human download -------------------------------------
+# A DMG survives download/unarchive far better than a bare zip (no third-party
+# unzipper strips the notarization ticket). create-dmg signs it (explicit
+# SIGN_ID) but does NOT notarize, so notarize + staple it here — the app inside
+# is already stapled, so both layers carry the ticket.
+echo "Building DMG…"
+rm -f "$DMG_PATH"
+create-dmg "$APP" "$BUILD_DIR" --overwrite --identity="$SIGN_ID"
+DMG_SRC="$(ls -t "$BUILD_DIR"/VisioNext*.dmg | head -1)"
+[ "$DMG_SRC" = "$DMG_PATH" ] || mv -f "$DMG_SRC" "$DMG_PATH"
+codesign --verify --strict "$DMG_PATH" || { echo "error: DMG not code-signed" >&2; exit 1; }
+echo "Notarizing DMG…"
+xcrun notarytool submit "$DMG_PATH" --keychain-profile "$NOTARY_PROFILE" --wait
+xcrun stapler staple "$DMG_PATH"
+xcrun stapler validate "$DMG_PATH"
 
 # --- Tag main + GitHub Release (hosts the zip; this is the download target) -
 # Must precede the appcast push so the release asset exists when clients fetch
@@ -102,7 +125,7 @@ git -C "$ROOT" add App/project.yml App/Info.plist
 git -C "$ROOT" commit -m "Release $VERSION"
 git -C "$ROOT" tag "v$VERSION"
 git -C "$ROOT" push origin main "v$VERSION"
-gh release create "v$VERSION" "$ZIP_PATH" --repo "$REPO" --title "v$VERSION" --generate-notes
+gh release create "v$VERSION" "$DMG_PATH" "$ZIP_PATH" --repo "$REPO" --title "v$VERSION" --generate-notes
 
 # --- Regenerate the appcast on gh-pages, pointing enclosures at the Releases -
 # gh-pages still hosts appcast.xml (SUFeedURL) and keeps the zips as the corpus

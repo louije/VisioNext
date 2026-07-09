@@ -16,9 +16,13 @@ no credentials are stored by this app.
 ## Download
 
 [**Download the latest release**](https://github.com/louije/visio-next/releases/latest)
-— unzip and move `VisioNext.app` to `/Applications` (or `~/Applications`). It's
-Developer ID-signed and notarized, so it opens without Gatekeeper warnings. After
-the first install, updates are automatic via Sparkle.
+— open the `.dmg` and drag `VisioNext.app` to Applications. It's Developer ID-signed,
+notarized, and stapled (both the app and the disk image), so it opens without
+Gatekeeper warnings. After the first install, updates are automatic via Sparkle.
+
+> On macOS Sequoia, if you ever see "Apple could not verify…", it means the copy
+> lost its notarization ticket in transit (e.g. a third-party unzip tool). The DMG
+> avoids that; if needed, open **System Settings → Privacy & Security → Open Anyway**.
 
 ## Layout
 
