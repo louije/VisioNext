@@ -10,13 +10,17 @@ shared content's real aspect ratio and lays the participants out:
 - **One line, or two** — prefers a single line of thumbnails, allows a second,
   never more; scrolls past that while keeping thumbnails legible.
 
-Two sources, shared by all three targets:
+Two sources, shared by all targets:
 
-- `enhance.css` — turns the engine's hooks into the grid (and, with JS off, still
-  gives a widened auto-wrapping side column).
+- `enhance.css` — turns the engine's hooks into the grid. All rules are gated
+  behind `.vn-on` on `<html>`, so the toolbar toggle can make them inert.
 - `layout-engine.js` — measures + decides, writing `data-vn-place` / `--vn-lines` /
-  `--vn-strip` onto `.lk-focus-layout`. Its decision function is pure and
-  unit-tested (`layout-engine.test.cjs`, run `node --test`).
+  `--vn-strip` onto `.lk-focus-layout` and toggling `.vn-on`. Its decision function
+  is pure and unit-tested (`layout-engine.test.cjs`, run `node --test`).
+
+**On/off:** click the toolbar icon for a popup with an Enabled switch (default on).
+The state is stored (`storage` permission) and applied live — no reload. The
+bookmarklet has no toolbar, so it just toggles by re-clicking.
 
 ## Design notes
 

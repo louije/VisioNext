@@ -75,7 +75,15 @@
   var current = null;   // the bound .lk-focus-layout element
   var ro = null;        // ResizeObserver on it
   var scheduled = false;
+  var enabled = false;  // gated on the stored setting (default on); see bootstrap
   var boundVideos = (typeof WeakSet !== 'undefined') ? new WeakSet() : null;
+
+  // Extension storage API (chrome/browser); null in a plain page (bookmarklet).
+  var store = (function () {
+    var b = (typeof browser !== 'undefined') ? browser
+      : (typeof chrome !== 'undefined') ? chrome : null;
+    return (b && b.storage && b.storage.local) ? b.storage : null;
+  })();
 
   function gap(el) {
     var v = parseFloat(getComputedStyle(el).getPropertyValue('--lk-grid-gap'));
@@ -154,26 +162,49 @@
   }
 
   function scan() {
+    if (!enabled) { unbind(); return; }
     var focus = document.querySelector('.lk-focus-layout');
     if (focus) bind(focus);
     else unbind();
   }
 
+  function setEnabled(on) {
+    enabled = !!on;
+    document.documentElement.classList.toggle('vn-on', enabled);
+    scan(); // binds when enabled, unbinds + clears hooks when not
+  }
+
   // Watch the SPA: the room (and focus layout) mounts/unmounts over time.
   var rootMo = new MutationObserver(function () {
-    if (!current || !current.isConnected) scan();
+    if (enabled && (!current || !current.isConnected)) scan();
   });
   rootMo.observe(document.documentElement, { childList: true, subtree: true });
   window.addEventListener('resize', schedule);
-  scan();
+
+  // On/off is stored (default on) and driven from the toolbar popup; a plain page
+  // (bookmarklet) has no storage, so it just turns on.
+  if (store) {
+    store.local.get('enabled')
+      .then(function (r) { setEnabled(r.enabled !== false); })
+      .catch(function () { setEnabled(true); });
+    if (store.onChanged) {
+      store.onChanged.addListener(function (ch, area) {
+        if (area === 'local' && ch.enabled) setEnabled(ch.enabled.newValue !== false);
+      });
+    }
+  } else {
+    setEnabled(true);
+  }
 
   // Teardown handle (used by the bookmarklet to toggle off).
   window.__vnMeet = {
     config: CONFIG,
+    setEnabled: setEnabled,
     stop: function () {
       rootMo.disconnect();
       window.removeEventListener('resize', schedule);
       unbind();
+      document.documentElement.classList.remove('vn-on');
       delete window.__vnMeet;
     },
     recompute: schedule,

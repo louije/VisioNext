@@ -128,6 +128,12 @@ targets:
       - path: ../web-extension/layout-engine.js
         type: file
         buildPhase: resources
+      - path: ../web-extension/popup.html
+        type: file
+        buildPhase: resources
+      - path: ../web-extension/popup.js
+        type: file
+        buildPhase: resources
       - path: ../web-extension/icons
         type: folder
         buildPhase: resources
