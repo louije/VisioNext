@@ -12,16 +12,29 @@ import { fileURLToPath } from 'node:url'
 const here = dirname(fileURLToPath(import.meta.url))
 mkdirSync(join(here, 'icons'), { recursive: true })
 
-const BLUE = [0, 0, 145]      // #000091 — DSFR / La Suite blue
+// App-icon gradient (App/Resources/VisioNext.icon/icon.json fill.linear-gradient,
+// display-p3 values ~ sRGB), vertical: blue at top -> red by 70% down.
+const GRAD_TOP = [0, 0, 139]    // display-p3 0.000, 0.000, 0.545
+const GRAD_BOT = [184, 47, 41]  // display-p3 0.720, 0.184, 0.160
+const GRAD_STOP = 0.7
 const WHITE = [255, 255, 255]
 const SS = 4                   // supersampling factor for anti-aliasing
 
-// Shapes in a 0..1 unit square: background, screen, two participant tiles.
+function bgAt(py) {
+  const t = Math.max(0, Math.min(1, py / GRAD_STOP))
+  return [
+    Math.round(GRAD_TOP[0] + (GRAD_BOT[0] - GRAD_TOP[0]) * t),
+    Math.round(GRAD_TOP[1] + (GRAD_BOT[1] - GRAD_TOP[1]) * t),
+    Math.round(GRAD_TOP[2] + (GRAD_BOT[2] - GRAD_TOP[2]) * t),
+  ]
+}
+
+// Shapes in a 0..1 unit square: background, two participant tiles (left), screen (right).
 const BG = { x0: 0, y0: 0, x1: 1, y1: 1, r: 0.22 }
 const SHAPES = [
-  { x0: 0.12, y0: 0.30, x1: 0.58, y1: 0.70, r: 0.05 }, // screen
-  { x0: 0.64, y0: 0.30, x1: 0.88, y1: 0.475, r: 0.04 }, // tile 1
-  { x0: 0.64, y0: 0.525, x1: 0.88, y1: 0.70, r: 0.04 }, // tile 2
+  { x0: 0.12, y0: 0.30, x1: 0.36, y1: 0.475, r: 0.04 }, // tile 1
+  { x0: 0.12, y0: 0.525, x1: 0.36, y1: 0.70, r: 0.04 }, // tile 2
+  { x0: 0.42, y0: 0.30, x1: 0.88, y1: 0.70, r: 0.05 }, // screen
 ]
 
 // Signed-distance test for a rounded rectangle (<= 0 means inside).
@@ -44,7 +57,7 @@ function render(size) {
           const px = (x + (sx + 0.5) / SS) / size
           const py = (y + (sy + 0.5) / SS) / size
           let cr = 0, cg = 0, cb = 0, ca = 0
-          if (insideRR(px, py, BG)) { [cr, cg, cb] = BLUE; ca = 255 }
+          if (insideRR(px, py, BG)) { [cr, cg, cb] = bgAt(py); ca = 255 }
           if (SHAPES.some((s) => insideRR(px, py, s))) { [cr, cg, cb] = WHITE; ca = 255 }
           r += cr; g += cg; b += cb; a += ca
         }
