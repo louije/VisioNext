@@ -1,8 +1,9 @@
 {
   "manifest_version": 3,
-  "name": "VisioNext — Meet multi-column strip",
+  "name": "VisioNext — adaptive Meet layout",
   "version": "0.1.0",
-  "description": "Adapts the participant strip to the shared content when a screen is shared on Meet / visio.numerique.gouv.fr (LiveKit).",
+  "description": "Adapts the participant strip to the shared screen on Meet / visio.numerique.gouv.fr — more faces, placed where the grey bars are.",
+  "homepage_url": "https://github.com/louije/visio-next",
   "browser_specific_settings": {
     "gecko": {
       "id": "visio-meet-layout@meidosem.com",
