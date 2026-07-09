@@ -15,8 +15,9 @@ mkdirSync(join(here, 'dist'), { recursive: true })
 const out = join(here, 'dist', 'web-extension.zip')
 rmSync(out, { force: true })
 
-const files = ['manifest.json', 'enhance.css', 'layout-engine.js']
-// -X: no extra file attributes → reproducible-ish; run from `here` so paths are flat.
-execFileSync('zip', ['-X', out, ...files], { cwd: here, stdio: 'inherit' })
+const files = ['manifest.json', 'enhance.css', 'layout-engine.js', 'icons']
+// -r: recurse into icons/; -X: no extra file attributes. Run from `here` so paths
+// are relative to the extension root.
+execFileSync('zip', ['-rX', out, ...files], { cwd: here, stdio: 'inherit' })
 
 console.log('Wrote dist/web-extension.zip (%s)', files.join(', '))

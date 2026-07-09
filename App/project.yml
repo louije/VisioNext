@@ -128,6 +128,9 @@ targets:
       - path: ../web-extension/layout-engine.js
         type: file
         buildPhase: resources
+      - path: ../web-extension/icons
+        type: folder
+        buildPhase: resources
     dependencies:
       - sdk: SafariServices.framework
     info:
