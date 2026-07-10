@@ -50,9 +50,9 @@ This folder **is** the extension.
 1. `chrome://extensions` → enable **Developer mode**.
 2. **Load unpacked** → select this `web-extension/` directory.
 
-It injects `enhance.css` + `layout-engine.js` on `visio.numerique.gouv.fr` (and
-`localhost` for local Meet dev). (Chrome logs a harmless "Unrecognized manifest
-key browser_specific_settings" — that key is only for Firefox.)
+It injects `enhance.css` + `layout-engine.js` on `visio.numerique.gouv.fr`.
+(Chrome logs a harmless "Unrecognized manifest key browser_specific_settings" —
+that key is only for Firefox.)
 
 ## 3. Firefox
 

@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "VisioNext — adaptive Meet layout",
-  "version": "0.1.0",
-  "description": "Adapts the participant strip to the shared screen on Meet / visio.numerique.gouv.fr — more faces, placed where the grey bars are.",
+  "name": "VisioNext — adaptive Visio layout",
+  "version": "0.1.1",
+  "description": "Adapts the participant strip to the shared screen on Visio (visio.numerique.gouv.fr) — more faces, placed where the grey bars are.",
   "homepage_url": "https://github.com/louije/visio-next",
   "browser_specific_settings": {
     "gecko": {
@@ -18,7 +18,7 @@
   },
   "permissions": ["storage"],
   "action": {
-    "default_title": "Adaptive Meet layout",
+    "default_title": "Adaptive Visio layout",
     "default_popup": "popup.html",
     "default_icon": {
       "16": "icons/icon-16.png",
@@ -27,11 +27,7 @@
   },
   "content_scripts": [
     {
-      "matches": [
-        "https://visio.numerique.gouv.fr/*",
-        "http://localhost/*",
-        "http://127.0.0.1/*"
-      ],
+      "matches": ["https://visio.numerique.gouv.fr/*"],
       "css": ["enhance.css"],
       "js": ["layout-engine.js"],
       "run_at": "document_idle",

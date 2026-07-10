@@ -17,7 +17,7 @@ VisioNext site — not in search). Unlisted is the "companion to the app" option
    verify contact info).
 2. **New item** → upload `dist/web-extension.zip`.
 3. Fill the listing (copy below), set **Visibility = Unlisted** (or Public).
-4. **Privacy** tab: single purpose = "adapt the video layout on Meet"; declare
+4. **Privacy** tab: single purpose = "adapt the video layout on Visio"; declare
    **no user data collected**; justify permissions (below). No remote code.
 5. Submit. First review is typically hours–days.
 
@@ -37,13 +37,13 @@ Auto-update is automatic once published.
 
 ## Listing copy (paste)
 
-**Name:** VisioNext — adaptive Meet layout
+**Name:** VisioNext — adaptive Visio layout
 
-**Summary (≤132):** Adapts the participant strip to the shared screen on Meet /
-visio.numerique.gouv.fr — more faces, placed where the grey bars are.
+**Summary (≤132):** Adapts the participant strip to the shared screen on Visio
+(visio.numerique.gouv.fr) — more faces, placed where the grey bars are.
 
 **Description:**
-> On Meet (La Suite numérique, built on LiveKit), when someone shares their screen
+> On Visio (La Suite numérique, built on LiveKit), when someone shares their screen
 > everyone else is squeezed into a single scrolling column. This extension reads
 > the shared content's real aspect ratio and lays the participants out
 > intelligently: beside the screen or below it — wherever the grey letterbox bars
@@ -61,9 +61,6 @@ visio.numerique.gouv.fr — more faces, placed where the grey bars are.
 - **Host access to `visio.numerique.gouv.fr`** — the extension injects a stylesheet
   and a small layout script into the call page to rearrange the participant strip.
   It runs nowhere else.
-
-(For a store build you may drop the `http://localhost/*` and `http://127.0.0.1/*`
-matches from `manifest.json` — they're only for local Meet development.)
 
 ## Data collection
 
