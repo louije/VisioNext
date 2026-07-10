@@ -36,6 +36,11 @@
   height: auto !important;
   max-height: none !important;
 }
+/* Transparent video background — a painted background peeks around the frame
+ *    at resized tile edges and shows as artefacts. */
+.vn-on video {
+  background-color: transparent !important;
+}
 /* Let the featured tile shrink to its track instead of forcing overflow. */
 .vn-on .lk-focus-layout[data-vn-place] > .lk-participant-tile {
   min-width: 0 !important;
